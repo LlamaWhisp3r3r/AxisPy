@@ -28,10 +28,6 @@ class AxisConfigure:
         if self.__debug:
             print("[DEBUG]:\t\t" + message)
 
-    def config(self):
-        """Configures an Axis camera to Valorence Standards"""  
-        pass
-
     def __run_and_check_func(self, func):
         result = func()
         if result:
@@ -95,9 +91,9 @@ class AxisConfigure:
 
         Parameters
         ----------
-        new_ip: str 
+        new_ip: str
             New static IP address for Axis camera
-        gateway: str 
+        gateway: str
             Gateway for Axis camera
         dnsserver_1: str
             1st DNS server
@@ -109,7 +105,7 @@ class AxisConfigure:
         bool
             API call was successful
         """
-        
+
         params = {'action': 'update', 'Network.BootProto': 'none', 'Network.Resolver.ObtainFromDHCP': 'no', 'Network.IPAddress': new_ip, 'Network.DefaultRouter': gateway, 'Network.DNSServer1': dnsserver_1, 'Network.DNSServer2': dnsserver_2}
         return self.__send_request(params, self.__general)
 
@@ -286,9 +282,11 @@ class AxisConfigure:
 
     def factory_login(self, user, pwd):
         """This is purely for testing purposes"""
-        
+
         # Should be able to do this with requests instead of selenium
         # Need to manually go down and plug into the router
+
+        # The request is not getting fully sent to the device. May need to Wireshark it
 
         params = {'action': 'update', 'user': user, 'pwd': pwd}
         url = self.__url.format(self.ip, self.__default_login)
