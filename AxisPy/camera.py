@@ -36,17 +36,19 @@ class AxisConfigure:
         else:
             self.__debug(func.__name__ + "\tWas NOT Successful")
 
-    def __send_request(self, parameters, endpoint, auth=True, check_response=True):
+    def __send_request(self, parameters, endpoint, get=False, auth=True, check_response=True):
         formatted_url = self.__url.format(self.ip, endpoint)
         proxies = {'http': '127.0.0.1:8080', 'https': '127.0.0.1:8080'}
         response = None
         if auth:
             digest_auth = HTTPDigestAuth(self.__username, self.__password)
-            response = requests.post(formatted_url, auth=digest_auth, json=parameters, proxies=proxies, timeout=self.__timeout)
+            if get:
+                response = requests.get(formatted_url, auth=digest_auth, params=parameters, proxies=proxies, timeout=self.__timeout)
+            else:
+                response = requests.post(formatted_url, auth=digest_auth, json=parameters, proxies=proxies, timeout=self.__timeout)
         else:
-            with requests.post(formatted_url, json=parameters, timeout=self.__timeout, stream=True) as r:
-                self.__debug(r)
-                response = r
+            if get:
+                response = requests.get(formatted_url, auth=digest_auth, params=parameters, proxies=proxies, timeout=self.__timeout)
 
         if check_response:
             return self.__response_is_ok(response)
@@ -81,7 +83,7 @@ class AxisConfigure:
             serial number and product number of Axis camera accordingly
         """
 
-        response = self.get_device_information()
+        response = self.get_device_information().json()
         # SerialNumber and ProductName
         SN = response['data']['propertyList']['SerialNumber']
         PN = response['data']['propertyList']['ProdShortName']
@@ -108,7 +110,7 @@ class AxisConfigure:
         """
 
         params = {'action': 'update', 'Network.BootProto': 'none', 'Network.Resolver.ObtainFromDHCP': 'no', 'Network.IPAddress': new_ip, 'Network.DefaultRouter': gateway, 'Network.DNSServer1': dnsserver_1, 'Network.DNSServer2': dnsserver_2}
-        return self.__send_request(params, self.__general)
+        return self.__send_request(params, self.__general, get=True)
 
     def set_sd_card_ext4(self):
         """Set Inserted SD Card to EXT4 file type
@@ -122,7 +124,7 @@ class AxisConfigure:
         params = {'schemaversion': 1, 'diskid': 'SD_DISK', 'filesystem': 'ext4'}
         return self.__send_request(params, self.__sd_card)
 
-    def add_user(self, user, pwd):
+    def add_user(self, user, pwd, group='users', auth=True):
         """Add user to Axis camera
 
         Parameters
@@ -138,8 +140,8 @@ class AxisConfigure:
             API call was successful
         """
 
-        params = {'action': 'add', 'user': user, 'pwd': pwd, 'grp': 'users', 'strict_pwd': 1, 'sgrp': 'viewer:operator:admin:ptz'}
-        return self.__send_request(params, self.__users)
+        params = {'action': 'add', 'user': user, 'pwd': pwd, 'grp': group, 'strict_pwd': 1, 'sgrp': 'viewer:operator:admin:ptz'}
+        return self.__send_request(params, self.__users, auth=auth)
 
     def set_ntp_server(self, ntp_server):
         """Set NTP server
@@ -194,7 +196,7 @@ class AxisConfigure:
         """
 
         params = {'action': 'update', 'PTZ.Limit.L1.MaxZoom': limit}
-        return self.__send_request(params, self.__general)
+        return self.__send_request(params, self.__general, get=True)
 
     def set_wdr(self, state):
         """Set WDR option to on or off
@@ -211,7 +213,7 @@ class AxisConfigure:
         """
 
         params = {'action': 'update', 'ImageSource.I0.Sensor.WDR': state}
-        return self.__send_request(params, self.__general)
+        return self.__send_request(params, self.__general, get=True)
 
     def set_ir_cut_filter(self, state):
         """Set IR cut filter to on or off
@@ -228,7 +230,7 @@ class AxisConfigure:
         """
 
         params = {'action': 'update', 'ImageSource.I0.DayNight.IrCutFilter': state} # yes=on, no=off, auto=auto
-        return self.__send_request(params, self.__general)
+        return self.__send_request(params, self.__general, get=True)
 
     def set_zipstream(self, strength=30):
         """Set Zipstream to low, medium, or high, higher, or extreme
@@ -245,7 +247,7 @@ class AxisConfigure:
         """
 
         params = {'strength': strength}
-        return self.__send_request(params, self.__zipstream)
+        return self.__send_request(params, self.__zipstream, get=True)
 
     def set_time_to_home(self, seconds):
         """Set time to home of ptz
@@ -262,7 +264,7 @@ class AxisConfigure:
         """
 
         params = {'action': 'update', 'PTZ.Various.V1.ReturnToOverview': seconds}
-        return self.__send_request(params, self.__general)
+        return self.__send_request(params, self.__general, get=True)
 
     def create_dynamic_overlay(self, text):
         """Create a dynamic overlay on the video
