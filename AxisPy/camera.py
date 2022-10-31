@@ -141,7 +141,7 @@ class AxisConfigure:
         """
 
         params = {'action': 'add', 'user': user, 'pwd': pwd, 'grp': group, 'strict_pwd': 1, 'sgrp': 'viewer:operator:admin:ptz'}
-        return self.__send_request(params, self.__users, auth=auth)
+        return self.__send_request(params, self.__users, get=True, auth=auth)
 
     def set_ntp_server(self, ntp_server):
         """Set NTP server
