@@ -68,7 +68,7 @@ class AxisConfigure:
             the response the camera gave from the API call
         """
 
-        params = {'apiVersion': '1.0', 'context': 'Client defined request ID', 'method': 'getAllProperties'}
+        params = {'apiVersion': '1.2', 'method': 'getAllUnrestrictedProperties'}
         return self.__send_request(params, self.__device_info, check_response=False)
 
     def get_serial_and_product(self):
