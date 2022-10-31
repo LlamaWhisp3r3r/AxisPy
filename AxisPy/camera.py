@@ -5,7 +5,7 @@ import logging
 
 class AxisConfigure:
 
-    def __init__(self, ip, username, password, debug=False):
+    def __init__(self, ip, username, password, debug=False, timeout=0.5):
         self.ip = ip
         self.__username = username
         self.__password = password
@@ -23,6 +23,7 @@ class AxisConfigure:
         self.__default_login = "pwdroot/pwdroot.cgi"
         self.__zipstream = 'zipstream/setstrength.cgi'
         self.__url = 'http://{}/axis-cgi/{}'
+        self.__timeout = timeout
 
     def __debug(self, message):
         if self.__debug:
@@ -37,13 +38,13 @@ class AxisConfigure:
 
     def __send_request(self, parameters, endpoint, auth=True, check_response=True):
         formatted_url = self.__url.format(self.ip, endpoint)
+        proxies = {'http': '127.0.0.1:8080', 'https': '127.0.0.1:8080'}
         response = None
         if auth:
             digest_auth = HTTPDigestAuth(self.__username, self.__password)
-            with requests.post(formatted_url, auth=digest_auth, json=parameters, stream=True) as r:
-                response = r
+            response = requests.post(formatted_url, auth=digest_auth, json=parameters, proxies=proxies, timeout=self.__timeout)
         else:
-            with requests.post(formatted_url, json=parameters, stream=True) as r:
+            with requests.post(formatted_url, json=parameters, timeout=self.__timeout, stream=True) as r:
                 self.__debug(r)
                 response = r
 
