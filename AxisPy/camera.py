@@ -122,7 +122,7 @@ class AxisConfigure:
         """
 
         params = {'schemaversion': 1, 'diskid': 'SD_DISK', 'filesystem': 'ext4'}
-        return self.__send_request(params, self.__sd_card)
+        return self.__send_request(params, self.__sd_card, get=True)
 
     def add_user(self, user, pwd, group='users', auth=True):
         """Add user to Axis camera
