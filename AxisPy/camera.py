@@ -38,17 +38,16 @@ class AxisConfigure:
 
     def __send_request(self, parameters, endpoint, get=False, auth=True, check_response=True):
         formatted_url = self.__url.format(self.ip, endpoint)
-        proxies = {'http': '127.0.0.1:8080', 'https': '127.0.0.1:8080'}
         response = None
         if auth:
             digest_auth = HTTPDigestAuth(self.__username, self.__password)
             if get:
-                response = requests.get(formatted_url, auth=digest_auth, params=parameters, proxies=proxies, timeout=self.__timeout)
+                response = requests.get(formatted_url, auth=digest_auth, params=parameters, timeout=self.__timeout)
             else:
-                response = requests.post(formatted_url, auth=digest_auth, json=parameters, proxies=proxies, timeout=self.__timeout)
+                response = requests.post(formatted_url, auth=digest_auth, json=parameters, timeout=self.__timeout)
         else:
             if get:
-                response = requests.get(formatted_url, params=parameters, proxies=proxies, timeout=self.__timeout)
+                response = requests.get(formatted_url, params=parameters, timeout=self.__timeout)
 
         if check_response:
             return self.__response_is_ok(response)
