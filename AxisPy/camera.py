@@ -48,7 +48,7 @@ class AxisConfigure:
                 response = requests.post(formatted_url, auth=digest_auth, json=parameters, proxies=proxies, timeout=self.__timeout)
         else:
             if get:
-                response = requests.get(formatted_url, auth=digest_auth, params=parameters, proxies=proxies, timeout=self.__timeout)
+                response = requests.get(formatted_url, params=parameters, proxies=proxies, timeout=self.__timeout)
 
         if check_response:
             return self.__response_is_ok(response)
