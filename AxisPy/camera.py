@@ -43,6 +43,8 @@ class AxisConfigure:
             digest_auth = HTTPDigestAuth(self.__username, self.__password)
             if get:
                 response = requests.get(formatted_url, auth=digest_auth, params=parameters, timeout=self.__timeout)
+                if 'error' in response.json().keys():
+                    self.__send_request(parameters, endpoint, get=not get, auth=auth, check_response=check_response)
             else:
                 response = requests.post(formatted_url, auth=digest_auth, json=parameters, timeout=self.__timeout)
         else:
@@ -56,7 +58,7 @@ class AxisConfigure:
 
     def __response_is_ok(self, response):
         if isinstance(response, requests.Response):
-            if response.status_code == 200:
+            if 'error' not in response.json().keys():
                 return True
             else:
                 return False
@@ -70,8 +72,13 @@ class AxisConfigure:
             the response the camera gave from the API call
         """
 
-        params = {'apiVersion': '1.2', 'method': 'getAllUnrestrictedProperties'}
-        return self.__send_request(params, self.__device_info, check_response=False)
+        new_params = {'apiVersion': '1.2', 'method': 'getAllUnrestrictedProperties'}
+        old_params = {'apiVersion': '1.0', 'method': 'getAllProperties'}
+        result =  self.__send_request(new_params, self.__device_info, check_response=False)
+        if self.__response_is_ok(result):
+            return result
+        else:
+            return self.__send_request(old_params, self.__device_info, check_response=False)
 
     def get_serial_and_product(self):
         """Gets and parses the serial number and product number from Axis camera
@@ -281,17 +288,3 @@ class AxisConfigure:
 
         params = {"apiVersion":"1.0","method":"addText","params":{"camera":1,"text":text}}
         response = self.__send_request(params, self.__dynam_overlay)
-
-    def factory_login(self, user, pwd):
-        """This is purely for testing purposes"""
-
-        # Should be able to do this with requests instead of selenium
-        # Need to manually go down and plug into the router
-
-        # The request is not getting fully sent to the device. May need to Wireshark it
-
-        params = {'action': 'update', 'user': user, 'pwd': pwd}
-        url = self.__url.format(self.ip, self.__default_login)
-        url = "http://" + self.ip + "/axis-cgi/pwdroot/pwdroot.cgi?action=update&user=root&pwd=Test123"
-        with requests.post(url, headers={'Axis-Orig-Sw': 'true', 'Host': self.ip}, stream=True) as r:
-            self.__debug(r)
