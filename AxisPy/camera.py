@@ -9,6 +9,7 @@ class AxisConfigure:
         self.ip = ip
         self.__username = username
         self.__password = password
+        self.__default_password = "pass"
         self.__debug = debug
 
         # Axis API Endpoints
@@ -43,13 +44,15 @@ class AxisConfigure:
             digest_auth = HTTPDigestAuth(self.__username, self.__password)
             if get:
                 response = requests.get(formatted_url, auth=digest_auth, params=parameters, timeout=self.__timeout)
-                if 'error' in response.json().keys():
+                if self.__response_is_ok(response):
                     self.__send_request(parameters, endpoint, get=not get, auth=auth, check_response=check_response)
             else:
                 response = requests.post(formatted_url, auth=digest_auth, json=parameters, timeout=self.__timeout)
         else:
             if get:
                 response = requests.get(formatted_url, params=parameters, timeout=self.__timeout)
+            else:
+                response = requests.post(formatted_url, json=parameters, timeout=self.__timeout)
 
         if check_response:
             return self.__response_is_ok(response)
@@ -58,12 +61,16 @@ class AxisConfigure:
 
     def __response_is_ok(self, response):
         if isinstance(response, requests.Response):
-            if 'error' not in response.json().keys():
-                return True
-            else:
+            try:
+                if 'error' not in response.json().keys():
+                    return True
+                else:
+                    return False
+            except:
+                print("Response:", response.text)
                 return False
 
-    def get_device_information(self):
+    def get_device_information(self, auth=True):
         """Gets Axis camera devices information
 
         Returns
@@ -74,11 +81,11 @@ class AxisConfigure:
 
         new_params = {'apiVersion': '1.2', 'method': 'getAllUnrestrictedProperties'}
         old_params = {'apiVersion': '1.0', 'method': 'getAllProperties'}
-        result =  self.__send_request(new_params, self.__device_info, check_response=False)
+        result =  self.__send_request(new_params, self.__device_info, check_response=False, auth=auth)
         if self.__response_is_ok(result):
             return result
         else:
-            return self.__send_request(old_params, self.__device_info, check_response=False)
+            return self.__send_request(old_params, self.__device_info, check_response=False, auth=auth)
 
     def get_serial_and_product(self):
         """Gets and parses the serial number and product number from Axis camera
