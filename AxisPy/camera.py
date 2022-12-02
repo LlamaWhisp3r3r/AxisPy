@@ -1,6 +1,9 @@
 from requests.auth import HTTPDigestAuth
 from requests import request
-from AxisPy.check_axis_response import check_response
+try:
+    from AxisPy.check_axis_response import check_response
+except ModuleNotFoundError:
+    from check_axis_response import check_response
 import requests
 import xml.etree.ElementTree as ET
 from json.decoder import JSONDecodeError
@@ -430,7 +433,7 @@ class AxisConfigure:
         """
 
         params = {'apiVersion': '1.0', 'method': 'systemready',
-                  'params': {'timeout': self.__timeout}}
+                  'params': {'timeout': 10}}
         return self.__send_request("POST", self.__system_ready, auth=False, check=False, json=params)
     
     @__try_catch
