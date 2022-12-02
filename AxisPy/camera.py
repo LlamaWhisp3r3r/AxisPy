@@ -58,6 +58,8 @@ class AxisConfigure:
                 return None
             except ParseError:
                 return []
+            except IndexError:
+                return []
         return inner
 
     def __send_request(self, method, endpoint, auth=True, check=True, **kwargs):
@@ -432,8 +434,7 @@ class AxisConfigure:
                 Data returned from API call
         """
 
-        params = {'apiVersion': '1.0', 'method': 'systemready',
-                  'params': {'timeout': 10}}
+        params = {'apiVersion': '1.0', 'method': 'systemready', 'params': {'timeout': 10}}
         return self.__send_request("POST", self.__system_ready, auth=False, check=False, json=params)
     
     @__try_catch
@@ -890,6 +891,7 @@ class AxisConfigure:
         params = {'apiVersion': '1.0', 'method': 'setTimeZone', 'params': {'timeZone': time_zone}}
         return self.__send_request('POST', self.__time, json=params)
 
+    @__try_catch
     def get_users(self):
         """Get camera users
         
@@ -969,8 +971,7 @@ class AxisConfigure:
             all_configurations.append({'name': 'AddValorence', 'value': 'valorence'})
         # Get Dynamic Overlays
         dynamic_overlays = self.get_dynamic_overlays()
-        if dynamic_overlays:
-            all_configurations.append({'name': 'DynamicOverlay', 'value': dynamic_overlays})
+        all_configurations.append({'name': 'DynamicOverlay', 'value': dynamic_overlays})
         # Get Default User
         all_configurations.append({'name': 'defaultUser', 'value': self.get_system_ready().json()['data']['needsetup']})
         return all_configurations
