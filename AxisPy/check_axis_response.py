@@ -26,6 +26,8 @@ def check_response(response):
         return True
     elif check_time_response(response):
         return True
+    elif check_system_ready(response):
+        return True
     else:
         return False
 
@@ -47,8 +49,7 @@ def check_ntp_response(response):
     jsonResponse['data']
     if jsonResponse['method'] == 'setNTPClientConfiguration':
         return True
-    else:
-        return False
+    return False
 
 @try_json
 def check_time_response(response):
@@ -57,10 +58,7 @@ def check_time_response(response):
     if jsonResponse['method'] == 'getAll':
         if type(jsonResponse['data']) == type(dict()):
             return True
-        else:
-            return False
-    else:
-        return False
+    return False
 
 @try_json
 def check_dynamic_overlay(response):
@@ -69,10 +67,7 @@ def check_dynamic_overlay(response):
     if jsonResponse['method'] == 'setText':
         if type(jsonResponse['data']) == type(dict()):
             return True
-        else:
-            return False
-    else:
-        return False
+    return False
 
 @try_json    
 def check_illumination(response):
@@ -81,8 +76,7 @@ def check_illumination(response):
     if jsonResponse['method'] == 'disableLight' or jsonResponse['method'] == 'enableLight':
         if type(jsonResponse['data']) == type(dict()):
             return True
-        else:
-            return False
+    return False
 
 @try_json
 def check_capture_mode(response):
@@ -91,8 +85,7 @@ def check_capture_mode(response):
     if jsonResponse['method'] == 'setCaptureMode':
         if type(jsonResponse['data']) == type(dict()):
             return True
-        else:
-            return False
+    return False
 
 @try_json
 def check_get_dynamic_overlays(response):
@@ -101,8 +94,17 @@ def check_get_dynamic_overlays(response):
     if jsonResponse['method'] == 'list':
         if type(jsonResponse['data']['textOverlays']) == type(list()):
             return True
-        else:
-            return False
+
+    return False
+
+@try_json
+def check_system_ready(response):
+    jsonResponse = response.json()
+    if jsonResponse['method'] == 'systemready':
+        if isinstance(jsonResponse['data'], dict):
+            return True
+        
+    return False 
 
 def check_response_as_xml(response):
     try:

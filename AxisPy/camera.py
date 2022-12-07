@@ -426,7 +426,7 @@ class AxisConfigure:
         self.restart()
         return response
 
-    def get_system_ready(self):
+    def get_system_ready(self, check=False):
         """Get if the system is ready 
 
         Returns
@@ -436,7 +436,7 @@ class AxisConfigure:
         """
 
         params = {'apiVersion': '1.0', 'method': 'systemready', 'params': {'timeout': 10}}
-        return self.__send_request("POST", self.__system_ready, auth=False, check=False, json=params)
+        return self.__send_request("POST", self.__system_ready, auth=False, check=check, json=params)
     
     @__try_catch
     def get_dynamic_overlays(self):
