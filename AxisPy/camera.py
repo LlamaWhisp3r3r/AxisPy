@@ -12,8 +12,9 @@ import logging
 
 class AxisConfigure:
 
-    def __init__(self, ip, username='root', password='pass', debug=False, timeout=0.5):
+    def __init__(self, ip, username='root', password='pass', port=80, debug=False, timeout=0.5):
         self.ip = ip
+        self.port = port
         self.__username = username
         self.__password = password
         self.__default_password = "pass"
@@ -35,7 +36,7 @@ class AxisConfigure:
         self.__capture_mode = 'capturemode.cgi'
         self.__system_ready = 'systemready.cgi'
         self.__restart_cgi = 'restart.cgi'
-        self.__url = 'http://{}/axis-cgi/{}'
+        self.__url = 'http://{}:{}/axis-cgi/{}'
         self.__timeout = timeout
 
     def __debug(self, message):
@@ -63,7 +64,7 @@ class AxisConfigure:
         return inner
 
     def __send_request(self, method, endpoint, auth=True, check=True, **kwargs):
-        formatted_url = self.__url.format(self.ip, endpoint)
+        formatted_url = self.__url.format(self.ip, self.port, endpoint)
         proxies = {'http': 'http://127.0.0.1:8080',
                    'https': 'http://127.0.0.1:8080'}
         response = None
