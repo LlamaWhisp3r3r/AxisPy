@@ -191,7 +191,7 @@ class AxisConfigure:
         Parameters
         ----------
         dhcp: str
-            NTP DHCP mode. 'no'=off, 'yes'=on
+            NTP DHCP mode. False=off, True=on
 
         Returns
         -------
@@ -199,7 +199,8 @@ class AxisConfigure:
             API call was successful
         """
 
-        params = {'action': 'update', 'Time.ObtainFromDHCP': dhcp}
+        stringState = "on" if dhcp else 'off'
+        params = {'action': 'update', 'Time.ObtainFromDHCP': stringState}
         return self.__send_request("GET", self.__general, params=params)
 
     def set_zoom_limit(self, limit):
@@ -227,7 +228,7 @@ class AxisConfigure:
         Parameters
         ----------
         state: str
-            State to update WDR option to. 'on'=on, 'off'=off
+            State to update WDR option to. True=on, False=off
 
         Returns
         -------
@@ -235,7 +236,8 @@ class AxisConfigure:
             API was successfull
         """
 
-        params = {'action': 'update', 'ImageSource.I0.Sensor.WDR': state}
+        stringState = "on" if state else 'off'
+        params = {'action': 'update', 'ImageSource.I0.Sensor.WDR': stringState}
         return self.__send_request("GET", self.__general, params=params)
 
     def set_ir_cut_filter(self, state):
@@ -244,7 +246,7 @@ class AxisConfigure:
         Parameters
         ----------
         state: str
-            State to update IR cut filter to. 'yes'=on, 'no'=off
+            State to update IR cut filter to. True=on, False=off
 
         Returns
         -------
@@ -252,9 +254,10 @@ class AxisConfigure:
             API was successfull
         """
 
+        stringState = "on" if state else 'off'
         # yes=on, no=off, auto=auto
         params = {'action': 'update',
-                  'ImageSource.I0.DayNight.IrCutFilter': state}
+                  'ImageSource.I0.DayNight.IrCutFilter': stringState}
         return self.__send_request("GET", self.__general, params=params)
 
     def set_zipstream(self, strength=30):

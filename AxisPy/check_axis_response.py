@@ -6,30 +6,31 @@ import json
 
 
 def check_response(response):
-    if response.text == "OK":
-        return True
-    elif check_response_as_xml(response):
-        return True
-    elif check_response_as_html(response):
-        return True
-    elif check_ntp_response(response):
-        return True
-    elif check_dynamic_overlay(response):
-        return True
-    elif check_illumination(response):
-        return True
-    elif check_capture_mode(response):
-        return True
-    elif check_get_dynamic_overlays(response):
-        return True
-    elif check_restart(response):
-        return True
-    elif check_time_response(response):
-        return True
-    elif check_system_ready(response):
-        return True
-    else:
-        return False
+    if response:
+        if response.text == "OK":
+            return True
+        elif check_response_as_xml(response):
+            return True
+        elif check_response_as_html(response):
+            return True
+        elif check_ntp_response(response):
+            return True
+        elif check_dynamic_overlay(response):
+            return True
+        elif check_illumination(response):
+            return True
+        elif check_capture_mode(response):
+            return True
+        elif check_get_dynamic_overlays(response):
+            return True
+        elif check_restart(response):
+            return True
+        elif check_time_response(response):
+            return True
+        elif check_system_ready(response):
+            return True
+        else:
+            return False
 
 def try_json(func):
     def wrapper(*args, **kwargs):
