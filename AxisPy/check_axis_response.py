@@ -122,14 +122,15 @@ def check_response_as_xml(response):
 def check_response_as_html(response):
     try:
         parsingHtml = BeautifulSoup(response.text, 'html.parser')
-        body_string = parsingHtml.find('body').string
+        body_string = parsingHtml.find('head').string
         print(body_string)
         if "Created account" in body_string:
             return True
-        else:
             return False
     except AttributeError:
         print("HTML Parse Error")
+        return False
+    except TypeError:
         return False
 
 def check_restart(response):
