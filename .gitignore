@@ -133,3 +133,4 @@ dmypy.json
 
 runner/
 AxisPy/camera10.py
+AxisPy/tests.py
