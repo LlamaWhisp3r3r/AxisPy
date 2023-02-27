@@ -1,6 +1,5 @@
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ParseError
-from html.parser import HTMLParser
 from bs4 import BeautifulSoup
 import json
 
@@ -32,6 +31,7 @@ def check_response(response):
         else:
             return False
 
+
 def try_json(func):
     def wrapper(*args, **kwargs):
         try:
@@ -40,11 +40,12 @@ def try_json(func):
             return False
         except json.decoder.JSONDecodeError:
             return False
+
     return wrapper
+
 
 @try_json
 def check_ntp_response(response):
-
     jsonResponse = response.json()
     jsonResponse['apiVersion']
     jsonResponse['data']
@@ -52,45 +53,45 @@ def check_ntp_response(response):
         return True
     return False
 
+
 @try_json
 def check_time_response(response):
-
     jsonResponse = response.json()
     if jsonResponse['method'] == 'getAll':
         if type(jsonResponse['data']) == type(dict()):
             return True
     return False
 
+
 @try_json
 def check_dynamic_overlay(response):
-
     jsonResponse = response.json()
     if jsonResponse['method'] == 'setText':
         if type(jsonResponse['data']) == type(dict()):
             return True
     return False
 
-@try_json    
-def check_illumination(response):
 
+@try_json
+def check_illumination(response):
     jsonResponse = response.json()
     if jsonResponse['method'] == 'disableLight' or jsonResponse['method'] == 'enableLight':
         if type(jsonResponse['data']) == type(dict()):
             return True
     return False
 
+
 @try_json
 def check_capture_mode(response):
-
     jsonResponse = response.json()
     if jsonResponse['method'] == 'setCaptureMode':
         if type(jsonResponse['data']) == type(dict()):
             return True
     return False
 
+
 @try_json
 def check_get_dynamic_overlays(response):
-
     jsonResponse = response.json()
     if jsonResponse['method'] == 'list':
         if type(jsonResponse['data']['textOverlays']) == type(list()):
@@ -98,40 +99,41 @@ def check_get_dynamic_overlays(response):
 
     return False
 
+
 @try_json
 def check_system_ready(response):
     jsonResponse = response.json()
     if jsonResponse['method'] == 'systemready':
         if isinstance(jsonResponse['data'], dict):
             return True
-        
-    return False 
+
+    return False
+
 
 def check_response_as_xml(response):
     try:
         xmlResponse = ET.fromstring(response.text)
-        print(xmlResponse.tag)
-        if xmlResponse.find('./Success') or xmlResponse.find('./{http://www.axis.com/vapix/http_cgi/zipstream1}Success'):
+        if xmlResponse.find('./Success') or xmlResponse.find(
+                './{http://www.axis.com/vapix/http_cgi/zipstream1}Success'):
             return True
         elif xmlResponse.find('./Error'):
             return False
     except ParseError as e:
-        print("Parse Error", e)
         return False
+
 
 def check_response_as_html(response):
     try:
         parsingHtml = BeautifulSoup(response.text, 'html.parser')
         body_string = parsingHtml.find('head').string
-        print(body_string)
         if "Created account" in body_string:
             return True
-            return False
+        return False
     except AttributeError:
-        print("HTML Parse Error")
         return False
     except TypeError:
         return False
+
 
 def check_restart(response):
     try:
