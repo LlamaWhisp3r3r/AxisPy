@@ -12,13 +12,14 @@ import logging
 
 class AxisConfigure:
 
-    def __init__(self, ip, username='root', password='pass', port=80, debug=False, timeout=0.5):
+    def __init__(self, ip, username='root', password='pass', port=80, debug=False, timeout=0.5, proxies=None):
         self.ip = ip
         self.port = port
         self.__username = username
-        self.__password = password
+        self.password = password
         self.__default_password = "pass"
         self.__debug = debug
+        self.__PROXIES = proxies
 
         # Axis API Endpoints
         self.__dynam_overlay = 'dynamicoverlay/dynamicoverlay.cgi'
@@ -36,8 +37,9 @@ class AxisConfigure:
         self.__capture_mode = 'capturemode.cgi'
         self.__system_ready = 'systemready.cgi'
         self.__restart_cgi = 'restart.cgi'
+        self.__firmware_upgrade = 'firmwareupgrade.cgi'
         self.__url = 'http://{}:{}/axis-cgi/{}'
-        self.__timeout = timeout
+        self.timeout = timeout
 
     def __debug(self, message):
         if self.__debug:
@@ -53,7 +55,6 @@ class AxisConfigure:
     def __try_catch(func):
         def inner(self, *args, **kwargs):
             try:
-                print(func.__name__)
                 return func(self, *args, **kwargs)
             except JSONDecodeError:
                 return None
@@ -65,16 +66,13 @@ class AxisConfigure:
 
     def __send_request(self, method, endpoint, auth=True, check=True, **kwargs):
         formatted_url = self.__url.format(self.ip, self.port, endpoint)
-        proxies = {'http': 'http://127.0.0.1:8080',
-                   'https': 'http://127.0.0.1:8080'}
-        response = None
         digest_auth = None
         
         if auth:
-            digest_auth = HTTPDigestAuth(self.__username, self.__password)
-    
-        response = request(method, formatted_url, auth=digest_auth, timeout=self.__timeout, proxies=proxies, **kwargs)
+            digest_auth = HTTPDigestAuth(self.__username, self.password)
 
+        response = request(method, formatted_url, auth=digest_auth, timeout=self.timeout, proxies=self.__PROXIES,
+                           **kwargs)
         if check:
             return check_response(response)
         else:
@@ -89,8 +87,10 @@ class AxisConfigure:
             the response the camera gave from the API call
         """
 
-        params = {'apiVersion': '1.2',
-                      'method': 'getAllUnrestrictedProperties'}
+        params = {
+            'apiVersion': '1.2',
+            'method': 'getAllUnrestrictedProperties'
+        }
         return self.__send_request(
             "POST", self.__device_info, check=False, auth=auth, json=params)
 
@@ -227,7 +227,7 @@ class AxisConfigure:
 
         Parameters
         ----------
-        state: str
+        state: bool
             State to update WDR option to. True=on, False=off
 
         Returns
@@ -254,7 +254,7 @@ class AxisConfigure:
             API was successfull
         """
 
-        stringState = "on" if state else 'off'
+        stringState = "yes" if state else 'no'
         # yes=on, no=off, auto=auto
         params = {'action': 'update',
                   'ImageSource.I0.DayNight.IrCutFilter': stringState}
@@ -453,6 +453,19 @@ class AxisConfigure:
         
         params = {'apiVersion': '1.0', 'method': 'list', 'params': {'camera': 1}}
         return self.__send_request('POST', self.__dynam_overlay, json=params, check=False).json()['data']['textOverlays']
+
+    def remove_dynamic_overlay(self, identity):
+
+        params = {
+            'apiVersion': '1.0',
+            'method': 'remove',
+            'params': {
+                'identity': identity
+            }
+        }
+
+        # TODO: add check function in check_axis_response
+        return self.__send_request('POST', self.__dynam_overlay, json=params, check=False)
     
     def restart(self):
         """Restart device
@@ -761,7 +774,7 @@ class AxisConfigure:
             API call was successful
         """
 
-        params = {'action': 'update', 'Image.IO.Stream.FPS': fps}
+        params = {'action': 'update', 'Image.I0.Stream.FPS': fps}
         return self.__send_request("GET", self.__general, params=params)
 
     def set_near_focus_limit(self, limit):
@@ -818,7 +831,7 @@ class AxisConfigure:
         params = {'action': 'update', 'PTZ.UserAdv.U1.ImageFreeze': stringOnParameter}
         return self.__send_request("GET", self.__general, params=params)
 
-    def set_proprtional_speed(self, speed):
+    def set_proportional_speed(self, speed):
         """Set max proportional speed
 
         Parameters
@@ -906,7 +919,7 @@ class AxisConfigure:
         """
 
         params = {'action': 'get'}
-        return self.__send_request("POST", self.__users, data=params, check=False).text.split('\r\n')[-2].split('"')[1].split(',')
+        return self.__send_request("POST", self.__users, json=params, check=False).text.split('\r\n')[-2].split('"')[1].split(',')
 
         
 
@@ -987,3 +1000,11 @@ class AxisConfigure:
         for parameter in xmlFile.iter("{http://www.axis.com/ParameterDefinitionsSchema}parameter"):
             parameterList.append(parameter.attrib)
         return parameterList
+
+    def upgrade_firmware(self, firmware_file):
+
+        params = {'file': open(firmware_file, 'rb'),
+                  'method': 'upgrade'}
+        data = {'method': 'upgrade'}
+
+        return self.__send_request('POST', self.__firmware_upgrade, check=False, files=params, json=data)
