@@ -1,9 +1,6 @@
 from requests.auth import HTTPDigestAuth
 from requests import request
-try:
-    from AxisPy.check_axis_response import check_response
-except ModuleNotFoundError:
-    from check_axis_response import check_response
+from AxisPy.check_axis_response import check_response
 import requests
 import xml.etree.ElementTree as ET
 from json.decoder import JSONDecodeError
