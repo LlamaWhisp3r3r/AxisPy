@@ -1,8 +1,9 @@
-from zeroconf import ServiceBrowser, ServiceListener, Zeroconf
 import time
 
-def get_only_axis_devices():
+from zeroconf import ServiceBrowser, ServiceListener, Zeroconf
 
+
+def get_only_axis_devices():
     overall_devices = run_scan()
     # This function only sees bonjour clients that have AXIS in their name
     axis_devices = dict()
@@ -22,13 +23,14 @@ def run_scan():
         zeroconf.close()
     return listener.overall_devices
 
-def get_local_ip_from_list(ip_list):
 
+def get_local_ip_from_list(ip_list):
     for ip in ip_list:
         # Check for apipa address
         if '169.254' not in ip and ipv6_character_in_ip_address(ip):
             return ip
     return None
+
 
 def ipv6_character_in_ip_address(ip_address):
     # List of ipv6 characters
@@ -39,12 +41,13 @@ def ipv6_character_in_ip_address(ip_address):
             return False
     return True
 
-def display_devices_on_network(device_list):
 
+def display_devices_on_network(device_list):
     count = 0
     for name, ip_address in device_list.items():
         count += 1
         print(f"[{count}] {name}: {ip_address}")
+
 
 def get_selected_device(device_list, selected_device):
     count = 0
@@ -76,6 +79,3 @@ if __name__ == '__main__':
     display_devices_on_network(axis_devices)
     camera_select = int(input("Please select the camera desired>>> "))
     get_selected_device(axis_devices, camera_select)
-
-
-
