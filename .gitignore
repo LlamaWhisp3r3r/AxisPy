@@ -128,4 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-AxisPy/runner.py
+# PyCharm
+.idea/
+
+runner/
+AxisPy/camera10.py
